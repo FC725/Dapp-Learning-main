@@ -1,0 +1,40 @@
+# zksync
+
+[主页](https://github.com/matter-labs/zksync)
+
+## ZK-Rollup
+zkRollup在链下利用Merkle tree存储账户状态，由Operator收集用户的交易，交易收集完成后Operator会执行每个交易（校验余额，校验nonce，校验签名，执行状态转换），当交易执行完成后会产生一个新的Merkle tree Root，为了证明链下状态转移是正确的，Operator会在交易执行完成后生成一个零知识证明的proof。
+Operator执行交易后本地的merkle tree root会由prev state root转换成post state root。  
+![zkrollup](./imgs/zkrollup.png)
+
+
+
+## 基本架构
+
+zkSync 的基本组成有：
+
+- zkSync smart contract：部署在以太坊网络上的 Solidity 智能合约，用于管理用户 balances 并验证 zkSync network 操作的正确性。
+
+- Prover application：为 a worker application，用于创建 a proof for an executed block。  
+  Prover application 会从 Server application 中获取有效的 jobs，当有新的区块时，Server application 将提供 a witness（input data to generate a proof），然后 Prover application 开始工作。当 proof 生成后，Prover application 会将该 proof 报告给 Server application，Server application 再将该 proof 发布给 zkSync 智能合约。
+
+- Prover application 可看成是 on-demand worker，当 Server application 负载很高时，允许有多个 Prover applications，当没有交易输入时则没有 Prover application。
+生成 proof 是非常消耗资源的工作，因此，运行 Prover application 的机器应具有现代 CPU 和大量的 RAM。
+
+- Server application：运行 zkSync 网络的节点。
+Server application 的职能主要有：  
+1）监测智能合约上的 onchain operations（如存款）  
+2）接收交易  
+3）生成 zkSync 上的区块  
+4）为 executed blocks 发起 proof 生成申请  
+5）将数据发布到 zkSync smart contract  
+
+## 参考链接
+
+- 一文读懂 Layer2 方案 zkSync 基本原理https://zhuanlan.zhihu.com/p/363029544
+
+- zksync 源码分析： https://www.jianshu.com/u/ac3aed07477e
+
+- 李星L2 - zkSync源代码导读： https://zhuanlan.zhihu.com/p/343212894
+
+-  以太坊 Layer 2 扩容方案及用例综述： https://mp.weixin.qq.com/s/TxZ5W9rx6OF8qB4ZU9XrKA
